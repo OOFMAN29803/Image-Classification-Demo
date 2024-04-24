@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+body {
+background-color: #303030;
+}
+
+#label-container {
+font-weight: 700;
+font-family: "Plus Jakarta Sans", sans-serif;
+font-optical-sizing: auto;
+font-style: normal;
+color: black;
+}
+
+p {
+font-family: "Plus Jakarta Sans", sans-serif;
+font-optical-sizing: auto;
+font-style: normal;
+color: white;
+}
+
+#label-container, #webcam-container {
+float: left;
+margin-left: 30px;
+}
+
+
+#pif {
+position: fixed;
+bottom: 3%;
+left: 3%;
+}
+
+#webcam-container {
+border-radius: 20px;
+}
+</style>
+</head>
+<body>
+<div class="mainContainer"><p>Image Classification Demo</p>
+<button type="button" onclick="init()" id="startButton">Start</button>
+<div id="webcam-container"></div>
+<div id="label-container"></div>
+<p id="pif">In case it doesn't work, even if you have said yes to using the webcam, try again by reloading. If you have any problems with this, rest assured that there is no data being sent to us, the only things connecting is to Google Teachable machine servers and TensorflowJS, this will get better but we're releasing a demo and will eventually move off of Teachable Machine. if you have any problems, look into the code. ctrl+shift+I. if you want more, or have any problems, contact me on Github: OOFMAN29803
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+<script type="text/javascript">
+
+    const URL = "https://teachablemachine.withgoogle.com/models/GNPgLga2d/";
+
+    let model, webcam, labelContainer, maxPredictions;
+
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+	var button123 = document.getElementById("startButton")
+	button123.style.display = "none";
+	var pif123 = document.getElementById("pif")
+
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        const flip = true;
+        webcam = new tmImage.Webcam(500, 500, flip); 
+        await webcam.setup(); 
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+        pif123.style.display = "block"
+
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) { 
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
+
+    async function loop() {
+        webcam.update(); 
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    async function predict() {
+        const prediction = await model.predict(webcam.canvas);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }
+
+</script>
+</body>
+</html>
+
